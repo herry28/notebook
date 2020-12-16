@@ -6,6 +6,8 @@
 
 - 基本数据类型：string、number、boolean、null、undefined
   - 基本数据类型的值赋值给某一个变量后，值本身不会再发生改变（==值不可变==）
+  - 基于字面量创建出来的值是基本类型
+  - 基于构造函数创建出来的值是引用类型
 - 引用数据类型：object、array、function
   - 引用数据类型的值赋值给某一个变量后，值可通过其赋值的变量修改（==值可变==）
 
@@ -16,6 +18,44 @@
   - ==null、array==的返回值也为object
 - ==instanceof==
   - 用于判断array、function、object
+  
+
+
+
+## 运算符
+
+- instanceof：当前实例是否是隶属于当前构造函数
+
+- in：检测当前对象是否存在某个属性（稀有属性、公有属性）
+
+
+
+## 严格模式
+
+- 变量需用var声明
+- 对象不能有重名属性
+
+
+
+## JSON对象
+
+- JSON.stringify(obj/arr)：将js对象（数组）转为json对象（数组）
+- JSON.parse(json)：将json对象（数组）转为js对象（数组）
+
+
+
+## Worker构造函数（h5）
+
+h5规范提供了js分线程的实现，通过Worker构造函数，用于加载分线程执行的js文件
+
+- Worker.prototype.onmessage：用于接收另一个线程的回调函数
+- Worker.prototype.postMessage：向另一个线程发送消息
+
+缺点：
+
+- worker内代码不能操作dom（更新ui）
+- 不能跨域加载js
+- 不是每个浏览器都支持
 
 
 
@@ -108,7 +148,7 @@ js代码：
 ## 函数调用
 
 - fn()
-- new Fn()：构造函数调用
+- new Fn()：构造函数调用。若构造函数不需要传递实参，可直接new Fn创建实例
 - obj.fn()：对象方式
 - fn.call/apply(obj)
 
@@ -117,12 +157,16 @@ js代码：
 ## 函数分类
 
 - 普通函数
-- 构造函数
+- 构造函数（类）
   - new操作符：
     - 创建一个空对象
     - 将this指向空对象
     - 执行函数
-    - 将执行结果返回
+    - return this
+      - 构造函数执行，不写return，浏览器默认返回创建的实例
+      - 写了return：
+        - 若是基本值，则返回的依然是类的实例
+        - 若是引用值，则会把默认返回的实例覆盖
 - 匿名函数自调用
   - 隐藏内部实现
   - 不污染外部命名空间
@@ -142,7 +186,8 @@ this的指向：
 - 函数自调用：==window==
 - 构造函数：当前构造函数的实例对象
 - 对象.方法()：对象
-- fn.call() / fn.apply()：指定的对象
+- fn.call() / fn.apply()：指定的对象，是立即调用函数
+- fn.bind()：指定的对象，将函数返回
 
 
 
@@ -150,14 +195,14 @@ this的指向：
 
 ### 原型对象：
 
-- 每个==构造函数对象==都有一个==prototype==属性（显式原型），在==定义函数==时自动添加的，默认指向一个Object空对象（==原型对象==）
+- 每个==函数==都有一个==prototype==属性（显式原型），在==定义函数==时自动添加的，默认指向一个Object空对象（==原型对象==）
 
-- 每个==实例对象==都有一个`__proto__`属性（隐式原型），==创建对象==时自动添加的
+- 每个==对象==都有一个`__proto__`属性（隐式原型），==创建对象==时自动添加的，指向当前实例所属类的prototype
   - 当初设计时不允许操作`__proto__`属性，所以叫隐式原型
 
 - 构造函数的显式原型 = 当前构造函数实例对象的隐式原型
 
-- 原型对象的本质：==普通的Object实例==，初始化时是空对象，后期添加的constructor属性，该属性指向当前构造函数本身
+- 原型对象的本质：==普通的Object实例==，初始化时是空对象，后期添加的constructor属性，该属性指向当前函数本身
   - 所有函数都是new Function出来的，包括Function
   - 所有对象都是new Object出来的，包括Object
 
@@ -169,7 +214,9 @@ this的指向：
 
 ### 原型链：
 
-沿着`__proto__`这条链就是原型链
+原型链：基于`__proto__`向上查找的机制
+
+属性查找规则：
 
 - 查找对象属性时先在==自身==上找
 - 若自身没有则沿着`__proto__`查找，若自身的原型对象还没有
@@ -177,7 +224,9 @@ this的指向：
 
 ### 原型链 & 作用域链：
 
-- 找==变量==沿==作用域链==，找==属性==沿==原型链==
+- 找==变量==沿==作用域链==，没找到会==报错==
+
+- 找==属性==沿==原型链==，没找到返回==undefined==
 
 - 读取对象属性时会自动到原型链中查找
 
@@ -191,7 +240,8 @@ this的指向：
 
 - 创建执行上下文环境
 - 进入当前的执行上下文环境后首先创建一个==变量对象==，用于收集当期执行上下文环境中的==变量、函数、函数参数、this==
-  - 变量提升 & 函数提升：
+  - 先形参赋值
+  - 再变量提升 & 函数提升：
     - 找关键字：var、function
     - 找到var后将var后面的变量提前声明，但不赋值
     - 找到function后定义对应的函数（函数在预解析时已经定义完毕）
@@ -324,6 +374,42 @@ this的指向：
 
 
 
+# 数组（有序、容器）
+
+## 数组方法
+
+- push()：往数组的最后一个位置追加元素
+
+- unshift()：往数组的第一个位置追加元素
+- pop()：移除数组中的最后一个元素
+- shift()：删除数组中的第一个元素
+- splice()：删除、添加元素
+- slice()：切割数组
+- concat()：数组拼接
+- join()：把数组用字符串拼接
+- toString()：把数组转为字符串
+- reverse()：数组反转
+- sort()：数组排序
+- indexOf()：查询某个元素的索引
+- lastIndexOf()：返回最后一个出现的元素索引
+- includes()：判断某个元素是否存在
+
+### 进阶
+
+- forEach(()=>{})：遍历数组
+- filter(()=>{})：过滤出一个新数组，返回条件为true的值
+- map(()=>{})：映射，返回加工后的数组
+- some(()=>{})：用于查询是否有符合条件的`某个`元素，若有，返回true；若没有，返回false
+- every(()=>{})：用于查询数组中每个元素都符合条件，若都符合，返回true；若有一个不符合，则返回false
+- find(()=>{})：查找符合条件的某个元素，返回元素对象
+- findIndex(()=>{})：返回元素的索引
+
+
+
+
+
+
+
 # 对象（无序、容器）
 
 对象是多个数据（key-value）的集合体，便于对多个数据进行统一的管理。
@@ -355,6 +441,30 @@ this的指向：
 
 
 
+## 对象的静态方法
+
+- Object.create(obj，[descriptors])
+  - 以指定对象为原型创建新的对象
+  - 为新的对象指定新属性，并对属性进行描述：
+    - value：指定值
+    - writable：标识当前属性是否可修改，默认为false
+    - configurable：标识当前属性是否可被删除，默认为false
+    - enumerable：标识当前属性是否能用for in 枚举，默认为false
+      - for in除了枚举自身属性，还会枚举原型的属性，通常需跟hasOwnProperty()一起用
+
+- Object.defineProperty(obj，属性，{})
+
+  - 为指定对象定义扩展多个属性
+
+
+
+## 对象的实例方法
+
+obj.hasOwnProperty()：检测当前属性是否为对象的私有属性
+
+
+
+
 ## ==继承==
 
 - 原型链继承：
@@ -374,9 +484,15 @@ Parent.call(this，参数)
 
 
 
+## 面向对象编程
+
+js中单例模式(字面量)：var obj={}   
 
 
-# 数组（有序、容器）
+
+
+
+
 
 
 
@@ -384,6 +500,201 @@ Parent.call(this，参数)
 
 # ES6
 
+## let  & const
+
+与var类似，用于声明一个变量。
+
+- 不能重复声明
+- 会预处理，有变量提升，但不能提前使用提升的变量
+  - 全局变量提升：会创建一个变量对象（script），用于收集全局作用域下let定义的变量，但是没有赋值
+  - 函数变量提升：会将var、let定义的变量放到当前函数的变量对象中
+- 同var变量提升的区别：let提升的变量在==未赋值前不允许被使用==
+
+const：定义常量，不可以被修改
+
+
+
+## 三点运算符
+
+- ...rest：必须是最后1个形参
+- 展开运算符（拆包）：不能直接遍历对象
+
+
+
+## 解构赋值
+
+从对象或数组中提取数据，并赋值给变量，以实现==按需索取==
+
+- 对象的解构：按key索取value
+
+- 数组的解构：按index索取value
+
+
+
+## Symbol
+
+Symbol是ES6中新增的原始数据类型
+
+- Symbol属性对应的值是唯一的，解决命名冲突问题
+- Symbol值不能与其他类型进行计算
+- for in，for of 遍历时不会遍历symbol属性
+
+
+
+## iterator（迭代器）
+
+iterator是一种接口机制，为各种不同的数据结构提供统一的访问机制。
+
+对象的==Symbol.iterator==属性指向该对象的==默认遍历器方法==
+
+ES6创造了一种for of循环，iterator接口主要供==for of、三点运算符==使用
+
+iterator工作原理：
+
+- 创建一个指针对象（遍历器对象），指向数据结构的起始位置
+- 第一次调用next()，指针自动指向数据结构的第一个成员
+- 不断调用next()，指针会一直往后移，直到指向最后一个成员
+- 每调用一次next()，会返回一个包含value和done的对象
+  - value：当前成员的值，当遍历结束时为undefined
+  - done：当前的数据结构是否遍历结束，当遍历结束时为true
+
+原生具备iterator接口的数据（可用for of遍历）：
+
+- String
+- Array
+- arguments
+- set容器
+- map容器
+
+```js
+function iteratorUtil(){//数组的iterator接口（方法/api）
+	let index = 0//标识指针起始位置
+  let that = this//for of遍历时的目标
+  let keys = Object.keys(this)//获取对象中所有key的数组
+  if(this instanceof Array){//如果是数组
+     return {//生成iterator遍历器对象：有next()方法，next()方法中返回一个包含value和done的对象
+      next:function(){
+        return index<that.length?{value:that[index++],done:false}:			                                            {value:that[index++],done:true}
+    				}
+  			}
+  }else{//是对象
+    return {
+      //生成iterator遍历器对象：有next()方法，next()方法中返回一个包含value和done的对象
+      next:function(){
+        return index<keys.length?{value:that[keys[index++]],done:false}:			                                            {value:that[keys[index++]],done:true}
+    			}
+    }
+  }
+}
+
+Array.prototype[Symbol.iterator]=iteratorUtil//为数组的原型部署自己的接口
+Object.prototype[Symbol.iterator]=iteratorUtil//为对象的原型部署自己的接口
+```
+
+
+
+
+
+
+
+
+
+## 箭头函数
+
+形参：
+
+- 0个：()不可省略
+- 1个：()可省略，也可以不省略
+- n个：()不能省略
+
+函数体：
+
+- 1条：{}可省略，当{}省略时会`自动return` 当前语句或表达式的结果
+  - 若函数体只有1条语句，且返回一个对象，不建议简写
+- n条：{}不可省略，需手动return 指定返回值，否则返回undefined
+
+箭头函数的特点：
+
+- 没有自己的this
+  - 箭头函数的this不是调用时决定的，而是==定义==时所处的上下文对象就是它的this
+- 不能用作构造函数
+
+
+
+## 对象的扩展
+
+### 对象的简化写法
+
+- 当key和value同名时，可简写
+- 可省略函数的：和function
+
+### 对象的静态方法：
+
+- Object.assign()：合并对象
+
+
+
+## class
+
+构造函数：用于定义实例属性，该构造函数实例化对象时自动执行
+
+实例方法
+
+静态方法 & 静态属性（类名调用）
+
+- static：定义静态方法
+- 类名.属性：定义静态属性 ？？？
+
+继承：
+
+- extends
+- super()：调用父类的constructor函数
+- super.xx()：调用父类的实例方法
+
+
+
+## defineProperty（ES5） & Proxy（ES6）
+
+> 参数1：数据源
+>
+> 参数2：属性名（该属性不存储数据，只是代理了属性的访问和修改。若需存储，需借助变量）
+>
+> 参数3：配置对象
+
+```javascript
+Object.defineProperty(obj，'属性'，{
+
+	get(){
+		return xxx   //访问属性时自动调用，get方法的返回值就是该属性的值
+	},
+	set(value){//设置属性时自动调用，value为设置的值
+		
+	}
+
+})
+```
+
+
+
 ## Proxy
+
+> 参数1：数据源
+>
+> 参数2：配置对象
+>
+> 返回值：代理对象
+
+```javascript
+const p = new Proxy(obj,{
+    get(targrt,property){//targrt：被代理的目标对象；property：访问的属性名
+        return target[property]
+    },
+    set(targrt,property,value){
+        target[property]=value
+    }
+})
+```
+
+
 
 ## Reflect

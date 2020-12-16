@@ -139,8 +139,8 @@ composition API（==组合==api）：
 
 - 从生命周期钩子的角度来看，setup会在beforeCreate==之前==执行
 - setup函数中的this是undefined
-  - 通过props参数来获取组件实例的属性
-  - 通过ctx参数来获取组件实例的方法和其它内容
+  - 通过props来获取组件实例的属性
+  - 通过ctx（对象）来获取组件实例的方法和其它内容
 - ==setup只能是同步的，不能异步==
 - 在setup中定义的变量和方法，要想被外界使用，必须==return==
 
@@ -148,7 +148,7 @@ composition API（==组合==api）：
 
 ## 响应式系统API
 
-### reactive 
+### reactive （深度）
 
 reactive()接收一个普通对象（json、arr），返回该对象的响应式代理Proxy对象。
 
@@ -163,6 +163,8 @@ ref()接收一个==简单类型的值==，返回一个==响应式的ref对象==�
 - 在==js==中使用ref类型的数据，必须通过ref对象的==value==属性获取
 
 ref数据在setup==内部或外部==都可以修改
+
+### toRefs
 
 ### computed
 
@@ -179,12 +181,32 @@ watch()是一个函数，要接收3个参数：
 - 参数2：==回调函数==
 - 参数3：额外的配置，是==一个对象=={deep：true，immediate：true}
 
-### readonly
+### watchEffect
+
+- 自动收集依赖
+
+### readonly（深度）
 
 readonly()接收一个对象（响应式或普通）或ref，返回一个原始对象的==只读==代理
 
 - 只读代理是==深层的==，对象内部任何嵌套的属性都是只读的
 - 作用：可以防止对象被修改
+
+### shallowReactive
+
+### shallowReadonly
+
+### isProxy
+
+只有reactive和readonly类型的返回的才是true
+
+### isReactive
+
+### isReadonly
+
+### toRaw
+
+### markRaw（1层）
 
 
 
