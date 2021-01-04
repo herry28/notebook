@@ -64,7 +64,9 @@
 
 ## vue3响应式原理
 
-vue3使用ES6中的==Proxy==语法实现响应式数据。底层是用Proxy的effect、trigger。
+vue3使用ES6中的==Proxy代理==，拦截data`任意属性的任意操作`。底层是用Proxy的effect、trigger。（目标对象 + 处理器对象：监视数据，需与反射对象配合）
+
+通过Reflect（反射）：动态对被代理对象（目标对象）的相应属性进行特定的操作
 
 - 优点：
   - 可以监测到==代理对象属性的动态添加和删除==
@@ -74,7 +76,7 @@ vue3使用ES6中的==Proxy==语法实现响应式数据。底层是用Proxy的ef
 
 ## vue2响应式原理
 
-vue2使用ES5中的Object.defineProperty()实现响应式数据
+vue2使用ES5中的Object.defineProperty()，劫持对象`已有`属性
 
 - 缺点：
   - ==无法监测到对象属性的动态添加和删除==
@@ -137,34 +139,83 @@ composition API（==组合==api）：
 
 ==setup(props，ctx){}==函数是一个新的组件选项，是Composition API的==起点==。
 
-- 从生命周期钩子的角度来看，setup会在beforeCreate==之前==执行
-- setup函数中的this是undefined
+### setup执行时机
+
+- 在beforeCreate之前执行`一次`，此时`组件对象还未创建`，即组件实例对象this不能用
+- setup函数中的this是undefined，不能通过this来访问data，computed、methods、props
   - 通过props来获取组件实例的属性
   - 通过ctx（对象）来获取组件实例的方法和其它内容
-- ==setup只能是同步的，不能异步==
-- 在setup中定义的变量和方法，要想被外界使用，必须==return==
+- 所有的composition api相关回调函数中的this都不可用
+
+### setup的返回值
+
+- 一般返回一个对象：为模板提供`数据`，即模板中可以直接使用此对象中的所有属性和方法
+- 返回对象中的属性会与data中的数据`合并`成为组件对象的属性
+- 返回对象中的方法会与methods中的方法`合并`成为组件对象的方法
+- 如果有重名，setup优先
+  - 一般不要混合使用：methods中可以访问setup中提供的属性和方法，但setup中不能访问data和methods
+  - setup`只能`是`同步`函数，不能是异步函数：因为返回值不再是return的对象，而是一个promise，模板中看不到return对象中的属性数据
+
+### setup的参数
+
+- setup(props，ctx){ }    setup(props，{attrs，slots，emit}){ }
+  - props：包含props配置声明且传入了的所有属性的`对象`
+  - ctx：是一个对象，里面有attrs对象、emit方法、slots对象
+    - attrs：包含`没有`在props配置声明中声明的属性对象，相当于this.$attrs
+    - slots：包含所有传入的插槽内容的对象，相当于this.$slots
+    - emit：用来分发自定义事件的函数，相当于this.$emit
+
+
+
+## ref & reactive
+
+ref、reactive是`深度`响应式
+
+ref用来处理基本类型数据，reactive用来处理对象（递归深度响应式）
+
+- 如果用ref处理对象，其内部会自动将对象转换为reactive的代理对象
+
+ref内部：通过给`value`属性添加`getter/setter`来实现对数据的劫持
+
+reactive内部：通过使用Proxy来实现对对象内部`所有`数据的劫持，并通过`Reflect`操作`目标对象`内部数据
+
+ref的数据操作：在`js`中要`.value`，在template中不需要（内部解析模板时会`自动`添加）
 
 
 
 ## 响应式系统API
 
-### reactive （深度）
+### reactive （深度响应式）
 
-reactive()接收一个普通对象（json、arr），返回该对象的响应式代理Proxy对象。
+reactive()接收一个普通对象（json、arr），返回该对象的Proxy代理对象。
 
 - reactive数据在setup==内部==可以修改，若定义方法返回到外部则不可修改
   - 可以通过toRefs()强制将reactive数据改为ref数据
+- 响应式是`深层次`的
+- 操作代理对象，目标对象中的数据也随之变化
 
 ### ref
 
-ref()接收一个==简单类型的值==，返回一个==响应式的ref对象==（有==唯一==的==value属性==）。
+ref()一般用于定义==简单类型的响应式数据==，返回一个==响应式的ref对象==（有==唯一==的==value属性==）。
 
 - 在==template==中使用ref类型的数据，vue会自动帮我们添加.value（==自动解套==），不需要额外的.value
 - 在==js==中使用ref类型的数据，必须通过ref对象的==value==属性获取
 
 ref数据在setup==内部或外部==都可以修改
 
-### toRefs
+### toRef   &   toRefs
+
+toRef：
+
+- 为源响应式对象上的`某个`属性创建一个ref对象，二者内部操作的是同一个数据值，更新时二者是同步的
+- 区别ref：拷贝了一份新的数据值单独使用，更新时相互不影响
+- 应用：当要把某个prop的ref传递给复合函数时，toRef很有用
+
+toRefs：可以把一个响应式对象转换成普通对象，该普通对象的`每个属性`都是一个`ref`对象
+
+### customRef
+
+- 用于自定义一个ref，可以显式的控制追踪和触发响应，接收一个工厂函数，2个参数分别时用于追踪的`track`和用于触发响应的`trigger`，返回一个带有`get和set属性的对象`
 
 ### computed
 
@@ -183,34 +234,62 @@ watch()是一个函数，要接收3个参数：
 
 ### watchEffect
 
-- 自动收集依赖
+- 自动收集依赖，默认会执行一次
 
-### readonly（深度）
+### readonly（深度）& shallowReadonly（浅）
 
-readonly()接收一个对象（响应式或普通）或ref，返回一个原始对象的==只读==代理
+readonly：
+
+- 接收一个对象（响应式或普通）或ref，返回原始对象的==只读==代理
 
 - 只读代理是==深层的==，对象内部任何嵌套的属性都是只读的
 - 作用：可以防止对象被修改
 
-### shallowReactive
+shallowReadonly：
 
-### shallowReadonly
+- 浅只读
+- 创建一个代理，使其自身的属性只读，但不执行嵌套对象的深度只读转换
 
-### isProxy
+### shallowReactive  & shallowRef
 
-只有reactive和readonly类型的返回的才是true
+- shallowReactive：只处理对象最外层属性的响应式（浅响应）
 
-### isReactive
+- shallowRef：只处理了value的响应式，不进行对象的reactive处理
+- 一般情况下使用ref和reactive即可。
+  - 若有一个对象数据，结构很深，但变化时只有外层属性变化，此时用shallowReactive
+  - 若有一个对象数据，后面会产生新的对象来替换，此时用shallowRef
 
-### isReadonly
+### toRaw   &   markRaw（1层）
 
-### toRaw
+toRaw：
 
-### markRaw（1层）
+- 返回`reactive` 或 `readonly`转换为响应式代理的`普通`对象
+- 这是一个还原方法，可用于临时读取，访问不会被代理，写入时也不会触发界面更新
+
+markRaw：
+
+- 标记一个对象，使其永远不会转换为代理对象，返回对象本身
+- 应用场景：
+  - 有些值不应被设置为响应式，如复杂的第三方实例或vue组件对象
+  - 当渲染具有不可变数据源的大列表时，跳过代理可提供性能
+
+### 响应式数据的判断
+
+- isRef：判断是否为ref对象
+
+- isReactive：判断一个对象是否由reactive创建的响应式代理
+
+- isReadonly：判断一个对象是否由readonly创建的只读代理
+
+- isProxy：判断一个对象是否由`reactive`或`readonly`创建的代理
 
 
 
-## 依赖注入
+
+
+
+
+## provide   &   inject
 
 vue3提供了==provide()和inject()==提供依赖注入，用于实现组件之间的通信。类似于vue2中的provide和inject
 
@@ -286,3 +365,22 @@ toRefs()用于把一个响应式对象转换成普通对象，该普通对象的
 
 - - vue3中提供了triggerRef方法（可以主动触发界面更新），没有提供triggerReactive方法（如果是reactive类型数据，无法主动触发界面更新）
 
+
+
+
+
+# 新组件
+
+## Fragment（片段）
+
+vue2中，组件中必须有一个根标签
+
+vue3中，组件可以没有根标签，内部会将多个标签包含在一个Fragment虚拟元素中
+
+- 作用：减少标签层级，减小内存占用
+
+## Teleport（瞬移）
+
+Teleport提供了一种干净的方法，让组件的html在父组件界面外的特定标签下插入显示
+
+## Suspense（不确定的）
