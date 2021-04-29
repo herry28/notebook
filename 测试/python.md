@@ -121,10 +121,19 @@ BIOS---->存有操作系统的光盘---->内存---->拷贝到本地硬盘--->提
 编译型  &  解释型：
 
 - 编译型：执行效率高、开发效率低、跨平台差
+- 解释型
 
-- 解释型：
+强类型 & 弱类型:
 
-python是`解释型`语言。
+- 强类型：变量的数据类型一旦被定义，就不会改变，除非强制转换。
+- 弱类型：变量的数据类型可随意切换
+
+动态 & 静态：
+
+- 动态：运行时才进行数据类型检查，即在变量赋值时，就确定了变量的数据类型，不用事先给变量指定数据类型
+- 静态：实现给变量进行数据类型定义
+
+python是`解释型的强类型动态`语言。
 
 python：
 
@@ -699,7 +708,11 @@ def 有参装饰器(参数):
   return outter
 ```
 
+## 内置函数
 
+- chr()：根据ascii码得到对应字符
+
+- ord()：根据字符得到对应ascii码
 
 
 
@@ -819,7 +832,6 @@ g=(i for i in iterable if condition) #此时g内部一个值也没有
 ## 模块常识
 
 - `模块名.名字`是指名道姓的问某一个模块要名字对应的值，不会与当前名称空间的名字冲突。
-
 - 无论是查看还是修改，操作的都是`模块本身`，与调用位置无关。
 - 自定义模块的命名应采用`纯小写+下划线`
 - 模块是第一类对象
@@ -830,29 +842,196 @@ g=(i for i in iterable if condition) #此时g内部一个值也没有
   2. 第三方模块
   3. 自定义模块
 
-## 如何导入模块？
+## 模块导入
+
+再次导入模块时`不会再造模块名称空间`，而是直接引用首次导入产生的模块名称空间，`不会再执行模块中的代码`
 
 ### import 模块名
 
 `首次`导入模块发生3件事：
 
-1. `执行`导入的模块
-2. 产生`导入模块的名称空间`，并将执行导入模块产生的名字都丢到该空间中
-3. 在`当前文件`中产生一个`名字`，该名字`指向`步骤2中产生的名称空间
+1. 产生`导入的模块名称空间`
+2. `运行`导入的模块，并将运行过程中产生的名字都丢到该空间中
+3. 在`当前文件`中产生一个`名字`，该名字指向`模块名称空间`
 
-之后的导入，都是直接引用首次导入产生的名称空间，不会重复执行代码
+### from 模块名 import...
+
+`首次`导入模块发生3件事：
+
+1. 产生`导入的模块名称空间`
+
+2. `运行`导入的模块，并将运行过程中产生的名字都丢到该空间中
+3. 在当前名称空间拿到一个名字，该名字指向`模块名称空间中的某一个内存地址`
+
+from 模块名 import *：导入模块中所有名字，`__all__`代表 * 控制的名字有哪些
+
+## .py文件的2种用途
+
+- 被当成程序运行：当.py被执行时，`__name__`的值为`__main__`
+
+- 被当做模块导入：当.py被导入时，`__name__`的值为`模块名`
+
+## 搜索模块的路径与优先级
+
+1. 内存（内置模块）
+
+2. 硬盘，按照`sys.path`中存放的文件顺序依次查找要导入的模块
+
+## 包
+
+包只是`模块`的一种形式而已，创建包的目的是为了被导入使用。
+
+python3中，即便包下没有`__init__.py`文件，`import 包`不会报错，python2会报错
+
+### 包的导入
+
+凡是导入时带点的，`点的左边必须是一个包`，否则报错。
+
+- import 包
+- from ... import ...
+
+### 绝对导入 & 相对导入
+
+- 绝对导入：以`顶级包`为起始，绝对导入没有任何限制
+  - `绝对导入---->sys.path--->执行文件`
+- 相对导入：`仅限包内`使用，包内模块之间的导入，一般用相对导入
+  - `.`代表当前文件夹
+  - `..`代表上级文件夹
+
+## 内置模块
+
+### os（操作系统）
+
+- `os.getcwd()`：获取当前工作目录
+- `os.mkdir()`：生成单级目录
+- `os.listdir()`：获取某一个文件夹下所有的`子文件及子文件夹`的名字
+- `os.system()`：运行shell命令
+- `os.environ`：值是一个`字典`，`key与value`必须都为`字符串`。获取系统环境变量
+- `os.remove()`：删除一个文件
+- `os.rename()`：重命名
+- `os.path.getsize()`：获取文件大小
+- `os.path.dirname()`：获取文件夹
+- `os.path.basename()`：获取文件名
+- `os.path.isfile()`：判断是否是文件
+- `os.path.isdir()`：判断是否是文件夹
+- `os.path.join()`：拼接路径
+- os.path.split()：得到文件夹和文件名
+- os.rmdir()：删除单级空目录，若目录不为空会报错
+- os.chdir()：切换目录
+- os.curdir()：返回当前目录
+- os.pardir()：获取当前目录的父目录字符串名
+- os.makedirs()：递归生成多层目录
+- os.removedirs()：若目录为空则删除，并递归到上一级目录，若也为空，则删除
+
+### sys
+
+- `sys.argv`：获取解释器后的参数值，即`命令行参数`，是个`列表`
+- `sys.path`：返回模块的搜索路径，是个`列表`，存放了一系列文件夹，其中第一个文件夹是当前`执行文件`所在的文件夹
+  - sys.path：列表，用于`导模块`
+  - os.environ：字典，整个环境都能用到的
+- sys.path.append()：添加到环境变量
+  - `__file__`：`当前文件的绝对路径`
+  - `os.path.dirname(os.path.dirname(_ _ file _ _))`：当前文件所在的文件夹
+- sys.modules：查看已经加载到内存中的模块
+
+### pathlib(python3.5以后的)
+
+```python
+from pathlib import Path
+root = Path(__ file __)
+res=root.parent.parent
+```
+
+### time & datetime
+
+time模块将时间分为3种格式：
+
+- 时间戳：从1970年到现在经过的`秒数`，用于时间间隔计算，`time.time()`
+- 格式化时间：用于展示时间，`time.strftime('%Y-%m-%d  %H:%M:%S')`
+- 结构化时间：用于单独获取时间的某一部分，time.localtime()
+
+时间格式的转换：格式化时间 <--->  结构化时间  <---> 时间戳
+
+- 结构化时间--->时间戳：`time.mktime()`
+- 时间戳--->结构化时间：time.localtime()
+- 格式化时间--->结构化时间：time.strptime()
+- 结构化时间--->格式化时间：time.strftime()
+
+datetime模块：
+
+- datetime.datetime.now()：获取现在的时间
+- `datetime.timedelta()`：时间的加减
+
+### random
+
+- random.random()：没有参数，得到`(0，1)`之间的`小数`
+- random.uniform(m，n)：得到`(m，n)`之间的`小数`
+- random.randint(m，n)：得到`[m，n]`之间的`整数`
+- random.randrange(m，n)：得到`[m，n)`之间的`整数`
+- random.choice([ ])：随机得到某个值
+- random.sample([ ]，n)：随机得到n个值（列表）
+- random.shuffle()：随机打乱列表顺序
+
+```python
+# 随机得到验证码
+def make_code(n):
+    res=''
+    for i in range(n):
+        d=str(random.randint(0,9))
+        s=chr(random.randint(65,90))
+        res += random.choice([d,s])
+    return res
+  
+ # 打印进度条
+def progress(percent):
+  if percent>1:
+    percent=1
+    res=int(50*percent)*'#'
+    print('\r[%-50s] %d%%'%(res,int(100*percent)),end='')
+```
 
 
 
+### shutil
+
+- 高级的文件、文件夹、压缩包处理模块
+
+### json & pickle
+
+序列化 & 反序列化
+
+- 序列化：`内存`中的数据类型--->序列化--->特定的格式写入`磁盘`（json格式或pickle格式）
+  - 用于`存储`，可以是一种专用的pickle（python独有）格式
+  - 传输给其它平台使用（`跨平台数据交互`），应该是一种通用、能够被所有语言识别
+
+- 反序列化：特定的格式--->反序列化--->内存中的数据类型
 
 
-## python内置模块
 
-### json
+#### json
 
-json.dumps()：将python对象转换为json字符串
+- json.dumps()：将python对象转换为json字符串
+- json.dump()：把python对象转换为json字符串，生成一个fp的文件流，与文件有关
 
-json.dump()：把python对象转换为json字符串，生成一个fp的文件流，与文件有关
+#### pickle
+
+### xml
+
+### shelve
+
+### configparser
+
+### hashlib
+
+### suprocess
+
+### logging
+
+### re
+
+## 第三方模块
+
+
 
 
 
@@ -1016,6 +1195,14 @@ with open(filename,mode='rt',encoding='utf-8') as f,\
 os.remove(filename)#删除旧文件
 os.rename(.filename.swap,filename)#将修改后的文件重命名
 ```
+
+
+
+# 面向对象
+
+
+
+
 
 
 
