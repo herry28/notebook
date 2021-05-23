@@ -19,6 +19,16 @@
 
 
 
+# 全局挂载
+
+全局挂载：app.config.globalProperties.xx=xx
+
+全局混入：app.mixin({ })
+
+
+
+
+
 
 
 # 创建vue3项目
@@ -29,6 +39,10 @@
 
 - - vite是vue作者开发的一款意图取代webpack的工具，其实现原理是利用es6的import会发送请求去加载文件的特性，拦截这些请求，做一些预编译，省去webpack冗长的打包时间
   - npm install -g create-vite-app
+
+
+
+
 
 
 
@@ -203,7 +217,7 @@ ref()一般用于定义==简单类型的响应式数据==，返回一个==响应
 
 ref数据在setup==内部或外部==都可以修改
 
-### toRef   &   toRefs
+### toRef   &   toRefs（`解构响应式对象`）
 
 toRef：
 
@@ -211,7 +225,7 @@ toRef：
 - 区别ref：拷贝了一份新的数据值单独使用，更新时相互不影响
 - 应用：当要把某个prop的ref传递给复合函数时，toRef很有用
 
-toRefs：可以把一个响应式对象转换成普通对象，该普通对象的`每个属性`都是一个`ref`对象
+`toRefs`：`...toRefs(obj)`，可以把一个响应式对象转换成普通对象，该普通对象的`每个属性`都是一个`ref`对象
 
 ### customRef
 
@@ -224,17 +238,15 @@ computed()是一个函数，有2种用法：
 - 传入一个==get函数==，返回一个==只读==的计算属性
 - 传入一个==对象==（包括get、set），可以创建一个可修改的计算属性
 
-### watch
+### watch & watchEffect
 
-watch()是一个函数，要接收3个参数：
+watch()是一个函数，只有`改变时才触发`，要接收3个参数：
 
 - 参数1：监视的数据源，可以是一个==ref==或==函数==（返回reactive数据）
 - 参数2：==回调函数==
 - 参数3：额外的配置，是==一个对象=={deep：true，immediate：true}
 
-### watchEffect
-
-- 自动收集依赖，默认会执行一次
+watchEffect(()=>{ })：自动收集依赖，`默认会执行一次`
 
 ### readonly（深度）& shallowReadonly（浅）
 
@@ -289,7 +301,7 @@ markRaw：
 
 
 
-## provide   &   inject
+## provide   &   inject（响应式的）
 
 vue3提供了==provide()和inject()==提供依赖注入，用于实现组件之间的通信。类似于vue2中的provide和inject
 
@@ -382,5 +394,7 @@ vue3中，组件可以没有根标签，内部会将多个标签包含在一个F
 ## Teleport（瞬移）
 
 Teleport提供了一种干净的方法，让组件的html在父组件界面外的特定标签下插入显示
+
+<teleport to="body"></teleport>
 
 ## Suspense（不确定的）
