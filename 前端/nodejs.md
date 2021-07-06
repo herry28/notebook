@@ -36,7 +36,13 @@ Node 自带了交互式解释器，可以执行以下任务：
   - 一般用于开发命令行项目
 - process.arch：打印系统位数
 
+## 页面中资源路径
 
+相对路径：
+
+- file协议中，相对于当前路径
+
+- http协议中，相对于当前网页的url地址
 
 
 
@@ -124,6 +130,94 @@ ip：区别`计算机`
 
 
 ## crypto
+
+
+
+
+
+
+
+
+
+# 中间件
+
+express中的中间件是一个可以访问`请求对象、响应对象、和调用next()`的`函数`。如果当前的中间件函数没有结束请求-响应周期，则必须调用`next()`将`控制权传递给下一个中间件函数`，否则，该请求将被挂起。
+
+- 执行任何代码
+- 修改req请求对象、res响应对象
+- 结束请求响应周期
+- 调用下一个中间件
+
+## 中间件分类
+
+next()：往后匹配下一个中间件
+
+next('route')：将控制权传递给下一条路由，仅在app.method()或router.method()函数加载的中间件中有效。
+
+`next(err)`：如果传递任意内容（除'route'外），express都会将当前请求视为错误，并`跳过所有剩余的无错误处理路由和中间件函数`
+
+1.  应用程序级别中间件：处理404的中间件一般放最后
+
+   - app.use()
+
+   - app.get()
+
+2. 路由器级别中间件：`路由实例`相当于一个`mini express实例`
+
+   - router.use()
+   - router.get()
+
+3. 错误处理中间件：始终带`4个`参数，在所有的中间件之后挂载
+
+   - app.use((err，req，res，next)=>{ })
+   - next(err)中的err将会传给给错误处理中间件的err。
+
+4. 内置中间件
+
+   - `express.json()`：解析Content-Type为application/json格式的请求体
+   - `express.urlencoded()`：解析Content-Type为application/x-www-form-urlencoded格式的请求体
+   - `express.static()`：托管静态资源文件
+
+5. 第三方中间件
+
+   - morgan：日志输出
+   - cors：跨域
+
+
+
+
+
+# 基于jwt的身份认证
+
+jwt是一个很长的`字符串`，中间用`.`分隔成3部分：Header.Payload.Signature
+
+- Header（头部）：json对象，描述jwt的元数据，使用`BASE64URL`算法转成字符串
+- Payload（负载）：json对象，用来存放实际需要传递的数据，使用`BASE64URL`算法转成字符串
+- Signature（签名）：是对前两部分的签名，防止数据篡改。
+
+jwt的特点：
+
+- jwt默认是不加密的，需要生成原始token后，使用密钥再加密一次。
+- jwt不仅可以用于认证，也可以用于交换信息
+- jwt应该使用https协议传输
+
+
+
+
+
+
+
+
+
+# 模板引擎(`art-template`)
+
+模板引擎：根据特定的规则，进行`字符串的解析替换`
+
+
+
+
+
+# mongodb数据库
 
 
 

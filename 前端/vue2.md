@@ -1,8 +1,13 @@
 # vue
 
+`$mount()`的本质：将`vdom转换为dom`
 
+## 开发环境的跨域（`反向代理`）
 
+开发环境的跨域，vue-cli为我们在本地开启了一个服务，通过这个服务`代理请求`，解决跨域。
 
+- 当请求地址中有/api时，就会`触发代理机制`
+- 本地前端--->本地后端--->代理我们向另一个服务器发请求
 
 ## mvvm（vue）
 
@@ -19,7 +24,11 @@ mvvm是==双向数据绑定==的。即数据改变影响视图，视图改变影
 
 mvc是==单向数据绑定==的。即数据改变影响视图，但视图改变不能影响数据，需要自己在控制层基于change事件实现数据的更改。
 
+## vue数据响应式
 
+1. Object.defineProperty()
+2. Vue.util.defineReactive()
+3. Vue.observable()
 
 ## 创建vue组件
 
@@ -28,9 +37,11 @@ mvc是==单向数据绑定==的。即数据改变影响视图，但视图改变�
 3. new Vue()：借鸡生蛋
    - $mount的本质：将`vdom转为dom`
 
+## 动态组件
 
+- <component :is=''/>
 
-# 组件通信
+## 组件通信
 
 1. props
 2. $emit/$on
@@ -47,15 +58,11 @@ mvc是==单向数据绑定==的。即数据改变影响视图，但视图改变�
      - inheritAttrs：false，禁用`根元素`的attribute继承
    - $listeners：`v-on="$listeners"`，展开事件，，并且原封不动的传递给爷爷
 
-## props
-
-## $emit/$on
-
-## event bus
 
 
 
-# 插槽
+
+## 插槽
 
 插槽：`内容分发`
 
@@ -63,7 +70,10 @@ mvc是==单向数据绑定==的。即数据改变影响视图，但视图改变�
 
 作用域插槽：分发内容要用到`子组件中的数据`。
 
+## 修饰符
 
+- sync：`this.$emit('update：prop'，值)`，sync修饰符是子组件改变父组件数据的一个语法糖
+- native：原生事件
 
 
 
@@ -71,23 +81,43 @@ mvc是==单向数据绑定==的。即数据改变影响视图，但视图改变�
 
 # vue-cli
 
+@表示src目录，若需在样式表中使用@别名，需要加上一个`~`
+
 # vue-router
 
 路由别名：`alias`
 
 嵌套路由： 嵌套路由里的path`不要加/`
 
+二级路由的path为空时，此时它表示二级路由的默认路由。
+
 动态路由：this.$route.params
 
 get传参：this.$route.query
 
+
+
 路由跳转：
 
 - this.$router.push({name:""，query:{ }}) //get传值
-
 - this.$router.push({name:""，params:{ }})    //动态传值
-
 - this.$router.push({path:""，params:{ }}) 
+
+## 路由导航守卫
+
+- next()：放行
+
+- next(false)：终止跳转
+
+- next(地址)：跳到某个地址
+
+  
+
+  
+
+  
+
+  
 
   
 
@@ -107,9 +137,24 @@ get传参：this.$route.query
 
 ## mutations
 
+- this.$store.commit('mutations'，payload)
+
 ## actions
 
+- this.$store.dispatch('actions'，payload)
+
 ## modules
+
+模块中的命名空间：
+
+- `namespaced:true`：开启命名空间
+- 默认情况下，`模块内部`的`mutations、actions、getters`是注册在`全局命名空间`的。
+
+访问命名空间：
+
+- 直接调用：this.$store.dispatch('模块名/方法')
+- 辅助函数：...mapMutations('模块名'，['mutations'])
+- 创建基于某个命名空间的辅助函数：`createNamespacedHelpers('模块名')`
 
 
 

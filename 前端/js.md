@@ -77,8 +77,10 @@ http协议是基于TCP/IP协议，`一个请求对应一个响应`
 ## 运算符
 
 - instanceof：当前实例是否是隶属于当前构造函数
-
 - in：检测当前对象是否存在某个属性（私有属性、公有属性）
+- void xx ：返回undefined
+- !!：返回true或false
+- 
 
 
 
@@ -95,6 +97,14 @@ http协议是基于TCP/IP协议，`一个请求对应一个响应`
 - JSON.parse(json)：将json对象（数组）转为js对象（数组）
 
 
+
+## 防抖 & 节流
+
+防抖：用户输入`结束或暂停`时，才会`触发change`事件
+
+节流：每隔`固定的时间`触发一次
+
+页面
 
 ## Worker构造函数（h5）
 
@@ -740,7 +750,8 @@ Promise是一个构造函数（容器），用来封装异步操作，并可以�
 
 - await后面若跟一个`基本数据类型`，则会将其包装为一个`promise对象`
 - await后面若跟一个promise对象，会把`resolve()的实参`返回
-- await是`异步的`
+- await是`异步的`，总是等到promise对象resolve成功之后执行
+- 通过`try catch`捕获异常
 
 
 
@@ -795,6 +806,8 @@ Promise是一个构造函数（容器），用来封装异步操作，并可以�
 
 ## ES6模块化
 
+`import * as 变量` from xx：得到的是一个对象
+
 
 
 ## defineProperty（ES5） & Proxy（ES6）
@@ -842,3 +855,15 @@ const p = new Proxy(obj,{
 
 
 ## Reflect
+
+# h5
+
+## postMessage
+
+window.postMessage：
+
+- window：通信的目标窗口
+  - 父页面向子页面发跨域消息：window是父页面中嵌入的iframe指向的子页面，即`iframe.contentWindow`
+  - 子页面向父页面发跨域消息：window是父页面的window
+- 需要等到iframe中的子页面加载完成后才发送消息，否则子页面接收不到
+- 在监听`message`事件时，需判断一下消息来源`origin`
